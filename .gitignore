@@ -1,0 +1,15 @@
+# Images
+*.jpg
+*.png
+
+# Database
+*.csv
+
+# matlab info
+*.asv
+
+# pdf
+*.pdf
+
+
+Coral images/
