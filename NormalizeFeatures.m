@@ -13,21 +13,12 @@ function featuresNorm = NormalizeFeatures(features)
 
     features = double(features);
     featuresNorm = features;
-    [R,C,num_features] = size(features);
-    
-    meanFeatures = squeeze(mean(mean(features, 1)))';
-    stdFeatures = std(reshape(features,[R*C, num_features]), [], 1);
-    
-    meanFeatures = reshape(repmat(meanFeatures, R*C, 1), [R C num_features]);
-    stdFeatures = reshape(repmat(stdFeatures, R*C, 1), [R C num_features]);
-    
-    featuresNorm = (featuresNorm - meanFeatures) ./ stdFeatures;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                              %
-%                                YOUR CODE HERE:                               %
-%                                                                              %
-%                HINT: The functions mean and std may be useful                %
-%                                                                              %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    F = reshape(features, [], 1, 5);
+    m = mean(F);
+    s = std(F);
+    [r, c, ~] = size(features);
+    T = repmat(m, r, c, 1);
+    featuresNorm = featuresNorm - T;
+    T = repmat(s, r, c, 1);
+    featuresNorm = featuresNorm ./ T;
 end
