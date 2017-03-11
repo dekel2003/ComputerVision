@@ -40,7 +40,9 @@ function [idx,c] = KMeansClustering(X, k, visualize2D, centers)
     % contain the center of a cluster, so that centers(c, :) is the center
     % of the cth cluster.
     if ~exist('centers', 'var')
-        centers = datasample(X, k, 'Replace', false);
+        c = datasample(X, k, 'Replace', false);
+    else
+        c = centers;
     end
     
     % The assignments of points to clusters. If idx(i) == c then the point
@@ -61,7 +63,7 @@ function [idx,c] = KMeansClustering(X, k, visualize2D, centers)
         
         % Compute distances from each point to the centers and assign each
         % point to the closest cluster.
-        [~,idx] = min(pdist2(X, centers), [], 2);
+        [~,idx] = min(pdist2(X, c), [], 2);
         
         % Break if cluster assignments didn't change
         if idx == old_idx
@@ -70,11 +72,11 @@ function [idx,c] = KMeansClustering(X, k, visualize2D, centers)
 
         % Update the cluster centers
         E = sparse(idx, 1:m, ones(m,1));
-        centers = diag(1 ./ sum(E, 2)) * (E * X);
+        c = diag(1 ./ sum(E, 2)) * (E * X);
         
         % Display the points in the 2D case.
         if n == 2 && visualize2D
-            VisualizeClusters2D(X, idx, centers, figHandle);
+            VisualizeClusters2D(X, idx, c, figHandle);
             pause;
         end
         

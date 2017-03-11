@@ -13,10 +13,10 @@ function featuresNorm = NormalizeFeatures(features)
 
     features = double(features);
     featuresNorm = features;
-    F = reshape(features, [], 1, 5);
+    [r, c, f] = size(features);
+    F = reshape(features, [], 1, f);
     m = mean(F);
     s = std(F);
-    [r, c, ~] = size(features);
     T = repmat(m, r, c, 1);
     featuresNorm = featuresNorm - T;
     T = repmat(s, r, c, 1);
