@@ -15,6 +15,6 @@ function features = ComputePositionColorFeatures(img)
     height = size(img, 1);
     width = size(img, 2);
     features = zeros(height, width, 5);
-    features(:,:,1:3) = double(img);
-    [features(:,:,4), features(:,:,5)] = meshgrid(1:width, 1:height);
+    features(:,:,3:5) = double(img);
+    [features(:,:,2), features(:,:,1)] = meshgrid(1:width, 1:height);
 end
