@@ -1,10 +1,13 @@
 function grabcut(im_name)
 
+close all;
 % convert the pixel values to [0,1] for each R G B channel.
 im_data = double(imread(im_name)) / 255;
 
 % downsample the image
-im_data = imresize(im_data,0.1);
+im_data = imresize(im_data,0.2);
+im_data = im_data(140:640,200:940,:);
+im_data_lab = rgb2lab(im_data);
 
 % display the image
 imagesc(im_data);
@@ -49,69 +52,76 @@ disp('grabcut algorithm');
 % [inside_the_box_indicesR, inside_the_box_indicesC] = find((C > xmin) & (C < xmax) & (R > ymin) & (R < ymax));
 inside = zeros(im_height, im_width);
 inside(1+ymin:ymax-1, 1+xmin:xmax-1) = 1;
-inside_ind = inside==1;
-inside_ind=inside_ind(:);
 
-im_vec = zeros(im_height * im_width, 5);
-features = ComputePositionColorFeatures(im_data);
-im_vec = reshape(permute(features,[3 1 2]), 5, im_height * im_width)';
+b_xmin = max(3*xmin - 2*xmax,1);
+b_xmax = min(3*xmax - 2*xmin,im_width);
+b_ymin = max(3*ymin - 2*ymax,1);
+b_ymax = min(3*ymax - 2*ymin,im_height);
+inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) = inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) + 1;
 
-fore = im_vec(inside_ind, :);
-back = im_vec(~inside_ind, :);
+features = ComputePositionColorFeatures(im_data_lab);
+im_vec = reshape(permute(features,[3 1 2]), [], im_height * im_width)';
 
+fore_ind = inside==2;
+back_ind = inside==1;
 
-clusters = 5; % 5 Gaussians in each GMM
-% Background
-% [Kb,Cb] = kmeans(back(:,3:end), clusters, 'Distance', 'cityblock', 'Replicates', 5);
-% gmm_back = gmdistribution(Cb, cov(back(:,3:end)));
-gmm_back = gmdistribution.fit(back(:,3:end),clusters);
-% gmm_back.CovarianceType = ''
-% Foreground
-% [Ku,Cu] = kmeans(fore(:,3:end), clusters, 'Distance', 'cityblock', 'Replicates', 5);
-% gmm_fore = gmdistribution(Cu, cov(fore(:,3:end)));
-gmm_fore = gmdistribution.fit(fore(:,3:end),clusters);
+clusters = 3;
 
+fore = im_vec(fore_ind, :);
+back = im_vec(back_ind, :);
+
+% fore_ind = fore_ind(:);
+% back_ind = back_ind(:);
+
+gmm_back = fitgmdist(back(:,3:end),clusters);
+gmm_fore = fitgmdist(fore(:,3:end),clusters);
 
 pairs = calc_weights(im_data, im_height, im_width);
 
-% 
+E_prev = +Inf;
 % while CONVERGENCE
 while (true)
 %     
 %     UPDATE THE GAUSSIAN MIXTURE MODELS
-%     Kb = cluster(gmm_back, im_vec(~inside_ind,3:end));
-%     Ku = cluster(gmm_back, im_vec(inside_ind,3:end));
-    gmm_back = gmdistribution.fit(im_vec(~inside_ind,3:end),clusters);
-    gmm_fore = gmdistribution.fit(im_vec(inside_ind,3:end),clusters);
+    Kb = cluster(gmm_back, back(:,3:end));
+    Ku = cluster(gmm_fore, fore(:,3:end));
+    gmm_back = fitgmdist(back(:,3:end),clusters,'Start',Kb);
+    gmm_fore = fitgmdist(fore(:,3:end),clusters,'Start',Ku);
 %     
     [~,~,~,unaryB] = cluster(gmm_back, im_vec(:,3:end));
     [~,~,~,unaryU] = cluster(gmm_fore, im_vec(:,3:end));
     unary = [unaryU' ; unaryB'];
 %     MAX-FLOW/MIN-CUT ENERGY MINIMIZATION
     graph = BK_Create(size(unary,2));
-    BK_SetPairwise(graph, ones(pairs));
+    BK_SetPairwise(graph, ((pairs)));
     BK_SetUnary(graph, unary);
     E = BK_Minimize(graph);
     glabels = BK_GetLabeling(graph);
     BK_Delete(graph);
-    inside_ind = (glabels==2) & inside_ind;
-    inside_ind2 = (glabels==2);
-%     IF THE ENERGY DOES NOT CONVERGE
-%         
-%         break;
-%     
-%     END
-end
+    
+    glabels = reshape(glabels, im_height, im_width);
+    back_ind = back_ind | (glabels==1 & fore_ind);
+    fore_ind = fore_ind & ~back_ind;
+    
+    fore = im_vec(fore_ind, :);
+    back = im_vec(back_ind, :);
+    
+    imshow(im_data);
+    hold on;
+    seg_edges = bwboundaries(fore_ind);
+    visboundaries(seg_edges,'EnhanceVisibility', false);
+    hold off;
+    drawnow;
 
-im_out = im_data;
-im_out_1d = im_vec;
-% Set background to white
-im_out_1d(~inside_ind2, :) = 255;
-% Assemble the 1D image back into 2D
-for idx = 1:size(im_out, 2)
-    im_out(:, idx, :) = im_out_1d((idx-1)*im_height+1:idx*im_height, 3:end);
+%     IF THE ENERGY DOES NOT CONVERGE
+    if (abs((E_prev-abs(E)))/E_prev < sqrt(eps))
+        break;
+    end
+    E_prev = abs(E);
+
+%     END
+
 end
-imshow(im_out);
 
 
 end

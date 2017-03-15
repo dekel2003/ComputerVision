@@ -5,7 +5,7 @@ weights = zeros(2*(H-1)*(W-1) + (H-1) + (W-1), 6);
 R = 1:H-1;
 C = 1:W;
 
-gamma = 50;
+gamma = 60;
 
 im1 = imfilter(img, [-1 1]).^2;
 im2 = imfilter(img, [-1;1]).^2;
