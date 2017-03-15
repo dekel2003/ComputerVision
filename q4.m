@@ -71,7 +71,7 @@ im_vec = reshape(permute(features,[3 1 2]), [], im_height * im_width)';
 fore_ind = inside==2;
 back_ind = inside==1;
 
-clusters = 7;
+clusters = 4;
 
 
 back_ind_t = back_ind;
