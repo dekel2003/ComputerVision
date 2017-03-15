@@ -1,6 +1,6 @@
 close all;
 
-im_name = '21_dive5_2014-09-29.jpg';
+im_name = '25_dive5_2014-09-29.jpg';
 % convert the pixel values to [0,1] for each R G B channel.
 im_data = double(imread(im_name)) / 255;
 
@@ -53,7 +53,6 @@ inside(1+ymin:ymax-1, 1+xmin:xmax-1) = 1;
 
 b_xmin = max(3*xmin - 2*xmax,1);
 b_xmax = min(3*xmax - 2*xmin,im_width);
-
 b_ymin = max(3*ymin - 2*ymax,1);
 b_ymax = min(3*ymax - 2*ymin,im_height);
 inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) = inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) + 1;
@@ -79,6 +78,10 @@ back_ind_t = back_ind;
 h2 = figure;
 subplot(2,3,1); imshow(im_data); title('Input Image');
 subplot(2,3,2); imshow(fore_ind); title('Initialization');
+
+gmm_fore = fitgmdist(fore(:,3:end),clusters);
+gmm_back = fitgmdist(back(:,3:end),clusters);
+    
 for i=1:6
     figure(h2);
     fore_ind=fore_ind(:);
@@ -86,17 +89,22 @@ for i=1:6
     
     fore = im_vec(fore_ind, :);
     back = im_vec(back_ind, :);
+    
+    Kb = cluster(gmm_back, back(:,3:end));
+    Ku = cluster(gmm_fore, fore(:,3:end));
 
-    gmm_fore = fitgmdist(fore(:,3:end),clusters);
-    gmm_back = fitgmdist(back(:,3:end),clusters);
+    gmm_back = fitgmdist(back(:,3:end),clusters,'Start',Kb);
+    gmm_fore = fitgmdist(fore(:,3:end),clusters,'Start',Ku);
 
     [~,~,~,unaryU] = cluster(gmm_fore, im_vec(:,3:end));
     [~,~,~,unaryB] = cluster(gmm_back, im_vec(:,3:end));
     
-%     unaryU(inside==2) = unaryU(inside==2) * 1.01;
-%     unaryB(~inside==2) = unaryB(~inside==2) * 1.01;
-
-    U_img = reshape(1.1*unaryU-unaryB,im_height, im_width);
+    if mod(i,2) == 1
+        unaryU = unaryU * 1.01;
+    else
+        unaryB = unaryB * 1.01;
+    end
+    U_img = reshape(unaryU-unaryB,im_height, im_width);
 %     imshow(U_img,[-10,10])
     m = fore_ind==1;
     m = reshape(m,im_height, im_width);
@@ -104,13 +112,13 @@ for i=1:6
 %     subplot(2,3,2); imshow(m); title('Initialization');
     subplot(2,3,3); imshow(U_img,[-10,10]); title('Energy Image');
     subplot(2,3,4); title('Segmentation');
-    seg = region_seg(U_img, m, 100, 0.8); %-- Run segmentation
+    seg = region_seg(U_img, m, 100, 1.2); %-- Run segmentation
     subplot(2,3,5); imshow(seg); title('Global Region-Based Segmentation');
     img = im_data;
     
     subplot(2,3,6); imshow(img); title('Result'); 
     hold on;
-    seg_edges = bwboundaries(seg);    
+    seg_edges = bwboundaries(seg);
     visboundaries(seg_edges,'EnhanceVisibility', false);
     hold off;
     
