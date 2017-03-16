@@ -47,11 +47,19 @@ end
 disp('grabcut algorithm');
 
 
+
+
 % INITIALIZE THE FOREGROUND & BACKGROUND GAUSSIAN MIXTURE MODEL (GMM)
 % [C, R] = meshgrid(1:im_height, 1:im_width);
 % [inside_the_box_indicesR, inside_the_box_indicesC] = find((C > xmin) & (C < xmax) & (R > ymin) & (R < ymax));
 inside = zeros(im_height, im_width);
 inside(1+ymin:ymax-1, 1+xmin:xmax-1) = 1;
+
+% figure, imshow(im_data), hold on;
+%     seg_edges = bwboundaries(inside==1);
+%     visboundaries(seg_edges,'EnhanceVisibility', false);
+% hold off;
+% figure;
 
 b_xmin = max(3*xmin - 2*xmax,1);
 b_xmax = min(3*xmax - 2*xmin,im_width);
@@ -60,12 +68,26 @@ b_ymax = min(3*ymax - 2*ymin,im_height);
 inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) = inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) + 1;
 
 features = ComputePositionColorFeatures(im_data_lab);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% uncomment to add gabor features  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% gaborArray = gaborFilterBank(2,3,17,17);
+% gaborFeatureVector = gaborFeatures(rgb2gray(im_data),gaborArray,1 , 1);
+% gabor_features = reshape(gaborFeatureVector, im_height, im_width, []);
+% features = cat(3, features, gabor_features);
+% features = NormalizeFeatures(features);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 im_vec = reshape(permute(features,[3 1 2]), [], im_height * im_width)';
 
 fore_ind = inside==2;
 back_ind = inside==1;
 
-clusters = 3;
+clusters = 5;
 
 fore = im_vec(fore_ind, :);
 back = im_vec(back_ind, :);
@@ -114,7 +136,7 @@ while (true)
     drawnow;
 
 %     IF THE ENERGY DOES NOT CONVERGE
-    if (abs((E_prev-abs(E)))/E_prev < sqrt(eps))
+    if (abs((E_prev-abs(E)))/E_prev < 1000*sqrt(eps))
         break;
     end
     E_prev = abs(E);
@@ -122,6 +144,6 @@ while (true)
 %     END
 
 end
-
+    
 
 end

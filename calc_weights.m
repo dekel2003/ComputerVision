@@ -14,13 +14,13 @@ beta = (mean(mean(im1(:,1:end-1,:)),2) + mean(mean(im2(1:end-1,:,:)),2))*2;
 beta = mean(beta);
 beta = inv(beta);
 
-t1 = repmat((R'-1)*H,1,numel(C)) + repmat(C,numel(R),1);
-t2 = repmat((R'  )*H,1,numel(C)) + repmat(C,numel(R),1);
+t1 = repmat((R'-1)*H,1,numel(C))' + repmat(C,numel(R),1)';
+t2 = repmat((R'  )*H,1,numel(C))' + repmat(C,numel(R),1)';
 
-horizontal_neighors_difference = img(R+1,C,:) - img(R,C,:);
-horizontal_neighors_difference_vec = reshape(permute(horizontal_neighors_difference,[3 1 2]), 3, (H-1) * W)';
+vertical_neighors_difference = img(R+1,C,:) - img(R,C,:);
+vertical_neighors_difference_vec = reshape(permute(vertical_neighors_difference,[3 1 2]), 3, (H-1) * W)';
 
-A = gamma * exp(-beta * sum(horizontal_neighors_difference_vec.^2, 2));
+A = gamma * exp(-beta * sum(vertical_neighors_difference_vec.^2, 2));
 
 
 weights(1:numel(t1),:) = [t1(:) t2(:) zeros(numel(t1),1) A(:) A(:) zeros(numel(t1),1)];
