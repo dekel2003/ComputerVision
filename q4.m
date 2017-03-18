@@ -1,6 +1,6 @@
 close all;
 
-im_name = '25_dive5_2014-09-29.jpg';
+im_name = '52_dive5_2014-09-29.jpg';
 % convert the pixel values to [0,1] for each R G B channel.
 im_data = double(imread(im_name)) / 255;
 
@@ -32,22 +32,9 @@ if channel_num ~= 3
     return;
 end
 
-% for h = 1 : im_height
-%     for w = 1 : im_width
-%         if (w > xmin) && (w < xmax) && (h > ymin) && (h < ymax)
-%             % this pixel belongs to the initial foreground
-%         else
-%             % this pixel belongs to the initial background
-%         end
-%     end
-% end
-
-% grabcut algorithm
-
 
 % INITIALIZE THE FOREGROUND & BACKGROUND GAUSSIAN MIXTURE MODEL (GMM)
-% [C, R] = meshgrid(1:im_height, 1:im_width);
-% [inside_the_box_indicesR, inside_the_box_indicesC] = find((C > xmin) & (C < xmax) & (R > ymin) & (R < ymax));
+
 inside = zeros(im_height, im_width);
 inside(1+ymin:ymax-1, 1+xmin:xmax-1) = 1;
 
@@ -59,25 +46,31 @@ inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) = inside(1+b_ymin:b_ymax-1, 1+b_xmi
 
 features = ComputePositionColorFeatures(im_data_lab);
 
-gaborArray = gaborFilterBank(3,2,39,39);
-gaborFeatureVector = gaborFeatures(rgb2gray(im_data),gaborArray,1 , 1);
-gabor_features = reshape(gaborFeatureVector, im_height, im_width, []);
-features = cat(3, features, gabor_features);
-features = NormalizeFeatures(features);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% uncomment to add gabor features  %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% gaborArray = gaborFilterBank(2,3,17,17);
+% gaborFeatureVector = gaborFeatures(rgb2gray(im_data),gaborArray,1 , 1);
+% gabor_features = reshape(gaborFeatureVector, im_height, im_width, []);
+% features = cat(3, features, gabor_features);
+% features = NormalizeFeatures(features);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 im_vec = reshape(permute(features,[3 1 2]), [], im_height * im_width)';
 
 fore_ind = inside==2;
 back_ind = inside==1;
 
-clusters = 5;
+clusters = 3;
 
 
 back_ind_t = back_ind;
 % h = figure;
 h2 = figure;
-subplot(2,3,1); imshow(im_data); title('Input Image');
-subplot(2,3,2); imshow(fore_ind); title('Initialization');
+subplot(3,2,1); imshow(im_data); title('Input Image');
+subplot(3,2,2); imshow(fore_ind); title('Initialization');
 
 fore = im_vec(fore_ind, :);
 back = im_vec(back_ind, :);
@@ -113,13 +106,13 @@ for i=1:6
     m = reshape(m,im_height, im_width);
 %     subplot(2,3,1); imshow(im_data); title('Input Image');
 %     subplot(2,3,2); imshow(m); title('Initialization');
-    subplot(2,3,3); imshow(U_img,[-100,100]); title('Energy Image');
-    subplot(2,3,4); title('Segmentation');
+    subplot(3,2,3); imshow(U_img,[-25,25]); title('Energy Image');
+    subplot(3,2,4); title('Segmentation');
     seg = region_seg(U_img, m, 100, 1.2); %-- Run segmentation
-    subplot(2,3,5); imshow(seg); title('Global Region-Based Segmentation');
+    subplot(3,2,5); imshow(seg); title('Global Region-Based Segmentation');
     img = im_data;
     
-    subplot(2,3,6); imshow(img); title('Result'); 
+    subplot(3,2,6); imshow(img); title('Result'); 
     hold on;
     seg_edges = bwboundaries(seg);
     visboundaries(seg_edges,'EnhanceVisibility', false);
@@ -129,9 +122,4 @@ for i=1:6
     back_ind_t = seg==0;
     drawnow;
     
-%     figure(h);
-%     if mod(i,2)==1
-%         subplot(2,3,(i-1)/2+1); imshow(img); title('Result');
-%     end
-%     drawnow;
 end
