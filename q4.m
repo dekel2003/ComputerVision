@@ -70,7 +70,7 @@ im_vec = reshape(permute(features,[3 1 2]), [], im_height * im_width)';
 fore_ind = inside==2;
 back_ind = inside==1;
 
-clusters = 4;
+clusters = 5;
 
 
 back_ind_t = back_ind;
@@ -79,6 +79,9 @@ h2 = figure;
 subplot(2,3,1); imshow(im_data); title('Input Image');
 subplot(2,3,2); imshow(fore_ind); title('Initialization');
 
+fore = im_vec(fore_ind, :);
+back = im_vec(back_ind, :);
+    
 gmm_fore = fitgmdist(fore(:,3:end),clusters);
 gmm_back = fitgmdist(back(:,3:end),clusters);
     
@@ -110,7 +113,7 @@ for i=1:6
     m = reshape(m,im_height, im_width);
 %     subplot(2,3,1); imshow(im_data); title('Input Image');
 %     subplot(2,3,2); imshow(m); title('Initialization');
-    subplot(2,3,3); imshow(U_img,[-10,10]); title('Energy Image');
+    subplot(2,3,3); imshow(U_img,[-100,100]); title('Energy Image');
     subplot(2,3,4); title('Segmentation');
     seg = region_seg(U_img, m, 100, 1.2); %-- Run segmentation
     subplot(2,3,5); imshow(seg); title('Global Region-Based Segmentation');

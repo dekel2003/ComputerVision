@@ -55,11 +55,13 @@ disp('grabcut algorithm');
 inside = zeros(im_height, im_width);
 inside(1+ymin:ymax-1, 1+xmin:xmax-1) = 1;
 
-% figure, imshow(im_data), hold on;
-%     seg_edges = bwboundaries(inside==1);
-%     visboundaries(seg_edges,'EnhanceVisibility', false);
-% hold off;
-% figure;
+figure, imshow(im_data), hold on;
+    seg_edges = bwboundaries(inside==1);
+    visboundaries(seg_edges,'EnhanceVisibility', false);
+hold off;
+drawnow;
+figure;
+
 
 b_xmin = max(3*xmin - 2*xmax,1);
 b_xmax = min(3*xmax - 2*xmin,im_width);
@@ -87,7 +89,7 @@ im_vec = reshape(permute(features,[3 1 2]), [], im_height * im_width)';
 fore_ind = inside==2;
 back_ind = inside==1;
 
-clusters = 5;
+clusters = 3;
 
 fore = im_vec(fore_ind, :);
 back = im_vec(back_ind, :);
@@ -136,7 +138,7 @@ while (true)
     drawnow;
 
 %     IF THE ENERGY DOES NOT CONVERGE
-    if (abs((E_prev-abs(E)))/E_prev < 1000*sqrt(eps))
+    if (abs((E_prev-abs(E)))/E_prev < 10*sqrt(sqrt(eps)))
         break;
     end
     E_prev = abs(E);
