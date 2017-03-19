@@ -82,10 +82,10 @@ function VisualizeClusters2D(points, idx, centers, figHandle)
         if clusterSize == 2
             plot(x, y, 'Color', colors(i, :));
         elseif clusterSize > 2
-            hull = convhull(x, y);
-            fill(x(hull), y(hull), colors(i, :), ...
-                 'FaceAlpha', CONVEX_HULL_ALPHA, ...
-                 'EdgeColor', colors(i, :));
+%             hull = convhull(x, y);
+%             fill(x(hull), y(hull), colors(i, :), ...
+%                  'FaceAlpha', CONVEX_HULL_ALPHA, ...
+%                  'EdgeColor', colors(i, :));
         end  
         hold off;
     end
