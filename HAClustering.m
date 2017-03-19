@@ -1,4 +1,4 @@
-function idx = HAClustering(X, k, visualize2D)
+function [idx, centroids] = HAClustering(X, k, visualize2D)
 % Run the hierarchical agglomerative clustering algorithm.
 % 
 % The algorithm is conceptually simple:

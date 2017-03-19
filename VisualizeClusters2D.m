@@ -32,8 +32,8 @@ function VisualizeClusters2D(points, idx, centers, figHandle)
         figHandle = figure;
     end
 
-    POINT_SIZE = 8;
-    CENTER_SIZE = 30;
+    POINT_SIZE = 2;
+    CENTER_SIZE = 6;
     CONVEX_HULL_ALPHA = 0.25;
 
     assert(size(points, 2) == 2, 'Must have size(points, 2) == 2');
