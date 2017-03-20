@@ -1,6 +1,7 @@
+function q4(im_name)
+
 close all;
 
-im_name = '27_dive5_2014-09-29.jpg';
 % convert the pixel values to [0,1] for each R G B channel.
 im_data = double(imread(im_name)) / 255;
 
@@ -137,4 +138,6 @@ for i=1:6
     back_ind_t = seg==0;
     drawnow;
     
+end
+
 end
