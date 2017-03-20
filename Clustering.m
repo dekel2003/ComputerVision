@@ -1,6 +1,8 @@
 
 close all;
 h = figure;
+
+%% K-Means, color
 for k = 20:29
 	% Create a mat filename, and load it into a structure called matData.
     fileName = sprintf('%d_dive5_2014-09-29.jpg', k);
@@ -12,7 +14,6 @@ for k = 20:29
     img = img(140:640,200:940,:);
 
     features = computeImageFeatures(img);
-%     features = ComputePositionColorFeatures(features);
     features = NormalizeFeatures(features);
     X = reshape(features, [], size(features, 3));
     
@@ -32,6 +33,7 @@ for k = 20:29
     end
 end
 
+%% K-Means, color + position
 for k = 20:29
 	% Create a mat filename, and load it into a structure called matData.
     fileName = sprintf('%d_dive5_2014-09-29.jpg', k);
@@ -63,6 +65,7 @@ for k = 20:29
     end
 end
 
+%% K-Means, gabor filters
 %%%% add gabor:
 gaborArray = gaborFilterBank(2,3,17,17);
 
@@ -100,7 +103,7 @@ for k = 20:29
 end
 
 
-
+%% HAC, different kinds are in inner loops
 for k = 20:29
 	% Create a mat filename, and load it into a structure called matData.
     fileName = sprintf('%d_dive5_2014-09-29.jpg', k);
