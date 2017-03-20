@@ -1,6 +1,6 @@
 close all;
 
-im_name = '52_dive5_2014-09-29.jpg';
+im_name = '27_dive5_2014-09-29.jpg';
 % convert the pixel values to [0,1] for each R G B channel.
 im_data = double(imread(im_name)) / 255;
 
@@ -10,6 +10,18 @@ im_data = im_data(140:640,200:940,:);
 im_data_lab = rgb2lab(im_data);
 % display the image
 imagesc(im_data);
+
+
+
+im_name_fluo = '27_dive5_2014-09-29_fluo.jpg';
+% convert the pixel values to [0,1] for each R G B channel.
+im_data_fluo = double(imread(im_name_fluo)) / 255;
+% downsample the image
+im_data_fluo = imresize(im_data_fluo,0.2);
+im_data_fluo = im_data_fluo(140:640,200:940,:);
+im_data_lab_fluo = rgb2lab(im_data_fluo);
+
+
 
 % a bounding box initialization
 disp('Draw a bounding box to specify the rough location of the foreground');
@@ -46,6 +58,9 @@ inside(1+b_ymin:b_ymax-1, 1+b_xmin:b_xmax-1) = inside(1+b_ymin:b_ymax-1, 1+b_xmi
 
 features = ComputePositionColorFeatures(im_data_lab);
 
+
+
+features = cat(3, features, im_data_lab_fluo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% uncomment to add gabor features  %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
